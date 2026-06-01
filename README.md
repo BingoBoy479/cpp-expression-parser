@@ -135,9 +135,8 @@ Input String
 
 ## Future Work
 
-- Variables
+
 - Unary Operators
-- Floating Point Numbers
 - Function Calls
 - Compiler Integration
 
