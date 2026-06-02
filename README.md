@@ -18,6 +18,7 @@ Supported operators:
 *
 /
 %
+^
 ```
 
 Examples:
