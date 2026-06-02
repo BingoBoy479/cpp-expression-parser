@@ -1,75 +1,56 @@
-# AST-Based Expression Interpreter
+# Expression Interpreter
 
-A C++ interactive expression language that parses expressions into an Abstract Syntax Tree (AST) and evaluates them.
+A C++ AST-based expression interpreter built as a stepping stone toward implementing a full compiler frontend.
 
-This project was built as a stepping stone toward implementing a full compiler frontend. Instead of directly evaluating expressions, the interpreter first constructs an AST, making the architecture similar to real language implementations.
+The interpreter tokenizes user input, constructs an Abstract Syntax Tree (AST), visualizes the generated tree structure, and recursively evaluates expressions.
 
 ---
 
 ## Features
 
-### Expressions
+### Arithmetic Expressions
 
 Supported operators:
 
-| Operator | Description |
-|-----------|------------|
-| + | Addition |
-| - | Subtraction |
-| * | Multiplication |
-| / | Division |
-| < | Less Than |
-| > | Greater Than |
-
-### Variables
-
 ```text
-x = 10
-y = 20
-x + y
++
+-
+*
+/
 ```
 
-### Parentheses
+Examples:
 
 ```text
+1 + 2 * 3
 (1 + 2) * 3
+8 * 9 - 70
 ```
 
-### Implicit Multiplication
+---
 
-```text
-2(3 + 4)
-(1 + 2)(3 + 4)
-```
+### Comparison Operators
 
-are automatically interpreted as
-
-```text
-2 * (3 + 4)
-(1 + 2) * (3 + 4)
-```
-
-### AST Visualization
-
-Input:
-
-```text
-1 + 2 < 3 * 4
-```
-
-Generated AST:
+Supported operators:
 
 ```text
 <
-  +
-    1
-    2
-  *
-    3
-    4
+>
 ```
 
-### Interactive REPL
+Examples:
+
+```text
+x < y
+10 > 5
+1 + 2 < 3 * 4
+```
+
+---
+
+### Variables
+
+Create and use variables interactively:
 
 ```text
 >>> x = 8
@@ -78,27 +59,94 @@ x = 8
 >>> y = 2
 y = 2
 
->>> x < y
-0
-
->>> x + 10
-18
+>>> x + y
+10
 ```
 
 ---
 
-## Example
+### Built-in Functions
 
-### Input
+Supported functions:
 
 ```text
-1+2<3*4
+max(a,b)
+min(a,b)
+convertBool(x)
 ```
 
-### AST
+Examples:
 
 ```text
-<
+max(10,20)
+min(5,3)
+convertBool(0)
+convertBool(42)
+```
+
+---
+
+### Nested Function Calls
+
+Function calls can be nested arbitrarily.
+
+Example:
+
+```text
+max(
+    max(1,2),
+    min(900,1000)
+)
+```
+
+Generated AST:
+
+```text
+Call(max)
+  Call(max)
+    1
+    2
+  Call(min)
+    900
+    1000
+```
+
+---
+
+### Implicit Multiplication
+
+The interpreter automatically inserts multiplication where appropriate.
+
+Examples:
+
+```text
+2(3+4)
+(1+2)(3+4)
+2x
+```
+
+become:
+
+```text
+2*(3+4)
+(1+2)*(3+4)
+2*x
+```
+
+---
+
+### AST Visualization
+
+Input:
+
+```text
+max(1+2,3*4)
+```
+
+Generated AST:
+
+```text
+Call(max)
   +
     1
     2
@@ -107,10 +155,10 @@ y = 2
     4
 ```
 
-### Evaluation
+Result:
 
 ```text
-1
+12
 ```
 
 ---
@@ -118,55 +166,23 @@ y = 2
 ## Architecture
 
 ```text
-Input
-  |
-  v
+User Input
+    │
+    ▼
 Tokenizer
-  |
-  v
+    │
+    ▼
 Token Stream
-  |
-  v
-Stack-Based AST Builder
-  |
-  v
+    │
+    ▼
+AST Builder
+    │
+    ▼
 Abstract Syntax Tree
-  |
-  v
+    │
+    ▼
 Recursive Evaluation
 ```
-
----
-
-## Internal Design
-
-The parser uses:
-
-- Operand Stack
-- Operator Stack
-- Precedence-Based Reduction
-
-to construct an AST.
-
-Example:
-
-```text
-8 * 3 + 1 * 2
-```
-
-becomes
-
-```text
-+
-├── *
-│   ├── 8
-│   └── 3
-└── *
-    ├── 1
-    └── 2
-```
-
-before evaluation.
 
 ---
 
@@ -187,13 +203,69 @@ x
 ### Binary Expression
 
 ```text
-x + y
++
+├── 1
+└── 2
 ```
 
+### Function Call
+
 ```text
-+
-├── x
-└── y
+Call(max)
+├── 1
+└── 2
+```
+
+---
+
+## Example Session
+
+```text
+>>> x = 8
+x = 8
+
+>>> y = 2
+y = 2
+
+>>> x < y
+0
+
+>>> max(max(1,2),8*9-70)
+
+Call(max)
+  Call(max)
+    1
+    2
+  -
+    *
+      8
+      9
+    70
+
+2
+```
+
+---
+
+## Error Handling
+
+The interpreter detects and reports:
+
+```text
+Undefined variables
+Division by zero
+Mismatched parentheses
+Invalid function calls
+Incorrect argument counts
+Malformed expressions
+```
+
+Examples:
+
+```text
+Error: Undefined variable: x
+Error: Division by zero
+Error: Function Error:: Missing ')'
 ```
 
 ---
@@ -203,7 +275,7 @@ x + y
 Compile:
 
 ```bash
-g++ -std=c++17 parser.cpp -o parser
+g++ -O2 -s parser.cpp -o parser
 ```
 
 Run:
@@ -216,25 +288,30 @@ Run:
 
 ## Motivation
 
-This project was created to understand:
+This project was built to understand:
 
-- Abstract Syntax Trees
-- Expression Parsing
-- Operator Precedence
-- Recursive Tree Traversal
-- Interpreter Design
-- Compiler Frontend Architecture
+* Lexical Analysis
+* Abstract Syntax Trees
+* Expression Parsing
+* Recursive Tree Traversal
+* Operator Precedence
+* Interpreter Design
+* Compiler Frontend Architecture
 
-The code serves as a prototype for a larger compiler project currently under development.
+The long-term goal is to use the ideas developed here in a larger custom language and compiler project.
 
 ---
 
 ## Future Work
 
-- Unary Operators
-- Function Calls
-- Nested Function Calls
-- Additional Comparison Operators
+* Unary Operators
+
+```text
+-x
++x
+```
+
+* Additional Comparison Operators
 
 ```text
 <=
@@ -243,42 +320,10 @@ The code serves as a prototype for a larger compiler project currently under dev
 !=
 ```
 
-- Logical Operators
+* Logical Operators
 
 ```text
 &&
 ||
 !
 ```
-
-
-
----
-
-## Sample Session
-
-```text
->>> x = 8
-x = 8
-
->>> y = 2
-y = 2
-
->>> x < y
-<
-  x
-  y
-0
-
->>> 1+2<3*4
-<
-  +
-    1
-    2
-  *
-    3
-    4
-1
-```
-
----
